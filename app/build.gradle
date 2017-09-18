@@ -1,0 +1,55 @@
+apply plugin: 'com.android.application'
+
+android {
+    compileSdkVersion 24
+    buildToolsVersion "25.0.0"
+    defaultConfig {
+        applicationId "net.nzbget.nzbget"
+        minSdkVersion 23
+        targetSdkVersion 24
+        versionCode 1
+        versionName "1.0"
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+}
+
+task prepareJni {
+    doLast {
+        copy {
+            from "src/main/jniLibs/armeabi/libdadaemon.so"
+            into "src/main/jniLibs/x86"
+        }
+        copy {
+            from "src/main/jniLibs/armeabi/libinstall.so"
+            into "src/main/jniLibs/x86"
+        }
+        copy {
+            from "src/main/jniLibs/armeabi/libupdater.so"
+            into "src/main/jniLibs/x86"
+        }
+    }
+}
+
+task cleanupJni {
+    doLast {
+        println "**** cleanup, doesn't work :("
+        delete "src/main/jniLibs/x86/libdadaemon.so"
+        delete "src/main/jniLibs/x86/libinstall.so"
+        delete "src/main/jniLibs/x86/libupdater.so"
+    }
+}
+
+dependencies {
+    compile fileTree(include: ['*.jar'], dir: 'libs')
+    compile 'com.android.support:appcompat-v7:24.1.1'
+    compile 'org.nanohttpd:nanohttpd-webserver:2.3.1'
+    compile 'org.apache.commons:commons-compress:1.14'
+    compile group: 'commons-io', name: 'commons-io', version: '2.5'
+    compile project(':MyCloudDeviceSDK')
+}

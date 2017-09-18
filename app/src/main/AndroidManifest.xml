@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="net.nzbget.nzbget">
+
+    <application
+        android:allowBackup="true"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:supportsRtl="true"
+        android:theme="@style/AppTheme">
+        <activity android:name="net.nzbget.nzbget.MainActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <!-- Must be present in every application-->
+        <service
+            android:name="net.nzbget.nzbget.StartupService"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="START" />
+            </intent-filter>
+        </service>
+        <service
+            android:name="net.nzbget.nzbget.NZBgetService"
+            android:exported="false"></service>
+    </application>
+
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"></uses-permission>
+    <uses-permission android:name="android.permission.INTERNET"></uses-permission>
+</manifest>

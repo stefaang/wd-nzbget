@@ -1,0 +1,99 @@
+#!/system/bin/sh
+#
+# Based on https://github.com/nzbget/android - GPL-2.0
+# Modified by Stefaan Ghysels
+#
+
+HOME=/data/data/net.nzbget.nzbget
+
+DAEMONLOG=$HOME/daemon.log
+APPDIR=$HOME/nzbget
+APPCONFIG=$APPDIR/nzbget.conf
+APPBIN=$APPDIR/nzbget
+INSTALLER=$2
+MAINDIR=$HOME/files/maindir
+cd $HOME
+
+# don't use the buggy toybox tools in MM
+# http://lists.landley.net/pipermail/toybox-landley.net/2016-January/007897.html
+
+PATH="$HOME/xbin:$PATH"
+
+SetupBusybox()
+{
+    mkdir -p xbin
+    /system/xbin/busybox --install -s xbin >> $DAEMONLOG 2>&1
+	if test $? -ne 0; then
+		echo "Busybox installation failed" >> $DAEMONLOG
+		exit 1
+	fi
+}
+
+Configure()
+{
+    # use double quotes to insert the correct MAINDIR
+	sed -e "s:^MainDir=.*:MainDir=${MAINDIR}:" -i $APPCONFIG >> $DAEMONLOG 2>&1
+	sed -e 's:^ScriptDir=.*:ScriptDir=/sdcard/data/nzbget/scripts:' -i $APPCONFIG >> $DAEMONLOG 2>&1
+	sed -e 's:^LockFile=.*:LockFile=${AppDir}/nzbget.lock:' -i $APPCONFIG >> $DAEMONLOG 2>&1
+}
+
+Install()
+{
+    echo "Installing daemon" > $DAEMONLOG
+    SetupBusybox
+    echo "Path: $PATH" >> $DAEMONLOG
+    which sed >> $DAEMONLOG
+    which tar >> $DAEMONLOG
+    tar >> $DAEMONLOG
+
+	if test -f $APPCONFIG; then
+		CONFIG_EXISTS=yes
+	fi
+
+	sh $INSTALLER --destdir $APPDIR >> $DAEMONLOG 2>&1
+	if test $? -ne 0; then
+		echo "Installation failed" >> $DAEMONLOG
+		exit 1
+	fi
+
+	echo "Installation successful" >> $DAEMONLOG
+
+	if test "$CONFIG_EXISTS" = ""; then
+		Configure
+		echo "Configuration successful" >> $DAEMONLOG
+	fi
+
+}
+
+Start()
+{
+	echo "Starting daemon" > $DAEMONLOG
+	$HOME/nzbget/nzbget -c $HOME/nzbget/nzbget.conf -D >> $DAEMONLOG 2>&1
+}
+
+Stop()
+{
+	echo "Stopping daemon" > $DAEMONLOG
+	$HOME/nzbget/nzbget -c $HOME/nzbget/nzbget.conf -Q >> $DAEMONLOG 2>&1
+}
+
+Remove()
+{
+	Stop
+	rm -r nzbget >> $DAEMONLOG 2>&1
+}
+
+case $1 in
+	install)
+		Install
+		;;
+	remove)
+		Remove
+		;;
+	start)
+		Start
+		;;
+	stop)
+		Stop
+		;;
+esac

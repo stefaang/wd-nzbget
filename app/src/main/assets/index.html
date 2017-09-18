@@ -1,0 +1,147 @@
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+
+    <style>
+.container {
+    max-width: 600px;
+}
+.jumbotron {
+    text-align: center;
+}
+.btn {
+    min-height: 65px;
+}
+    </style>
+</head>
+<body onload="getStatus()">
+<div class="container">
+    <div class="jumbotron">
+        <h1 class="display-3">NZBget</h1>
+        <p class="lead">NZBget for WD Mycloud Home</p>
+            <button class="btn btn-primary btn-block" id="cfg-btn"     value="Configure"
+                    name="action">Configure</button>
+            <button class="btn btn-success btn-block" id="dl-btn"      value="Download"
+                    name="action">Install latest stable release</button>
+            <button class="btn btn-block"             id="install-btn" value="Install"
+                    name="action">Install custom release</button>
+            <button class="btn btn-info btn-block"    id="start-btn"   value="Start"
+                    name="action">Start nzbget</button>
+            <button class="btn btn-warning btn-block" id="stop-btn"    value="Stop"
+                    name="action">Stop nzbget</button>
+            <button class="btn btn-danger btn-block"  id="remove-btn"  value="Remove"
+                    name="action">Remove nzbget</button>
+    </div>
+    <p>Default nzbget login and password: nzbget - tegbzn6789</p>
+    <p>For custom releases, put the installer at the root of your Mycloud folder</p>
+    <p>More information <a href="https://nzbget.net/installation-on-android">here</a></p>
+</div>
+
+<script>
+
+function getStatus() {
+    var xhr = new XMLHttpRequest();
+    xhr.open('get', 'status');
+    xhr.onload = function(){
+        var status = xhr.responseText;
+        console.log(status);
+        var btns, btn;
+        switch(status) {
+            case "NO_INSTALLER":
+                btns = {'cfg': 0, 'dl': 1, 'install': 0, 'start': 0, 'stop': 0, 'remove': 0};
+                break;
+            case "NOT_INSTALLED":
+                btns = {'cfg': 0, 'dl': 1, 'install': 1, 'start': 0, 'stop': 0, 'remove': 0};
+                break;
+            case "STOPPED":
+                btns = {'cfg': 0, 'dl': 0, 'install': 0, 'start': 1, 'stop': 0, 'remove': 1};
+                break;
+            case "RUNNING":
+                btns = {'cfg': 1, 'dl': 0, 'install': 0, 'start': 0, 'stop': 1, 'remove': 0};
+                break;
+            default:
+                console.log("Invalid status: " + status);
+                return
+        }
+        for (btn in btns) {
+            var el = document.getElementById(btn + "-btn");
+            if (btns[btn])
+                el.style.display = "inherit";
+            else
+                el.style.display = "none";
+        }
+    }
+    xhr.send();
+}
+setInterval(getStatus, 5000);
+
+<!--function sendForm(action) {-->
+    <!--var xhr = new XMLHttpRequest();-->
+    <!--xhr.open('post', '###BASE_URL###', true);-->
+    <!--xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");-->
+    <!--xhr.send("action=" + action);-->
+<!--}-->
+
+function sendForm(action) {
+    var xhr = new XMLHttpRequest();
+    var redirect = document.cookie.split(';');
+    var redirectIp = getQueryString("redirect-ip", window.location.href);
+    console.log(document.cookie);
+    console.log(redirectIp);
+    xhr.open('post', redirectIp + "?action=" + action, true);
+    xhr.withCredentials = true;
+
+    xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+    xhr.send();
+}
+
+function getQueryString(search, str) {
+    // use this to parse params from the URL
+    var reg = new RegExp('[?&]*' + search + '=([^&#]*)', 'i'),
+        string = reg.exec(str);
+    return string ? string[1] : null;
+}
+
+
+
+$('.btn').click(function(e) {
+    var action = e.target.value;
+    console.log("Clicked action: " + action);
+    if (action == "Configure") {
+        launchWebAdmin();
+    } else {
+        sendForm(action);
+    }
+});
+
+function animateProgressbar(duration) {
+    if (!duration) return null;
+    var p = 0,
+        step = 100 * 100 / duration,        // 100 pct * 100 ms
+        loadingId = setInterval(function() {
+            p = p + step;
+            // knight rider flip
+            step = (p % 100 == 0)? -step : step;
+            $('.progress-bar').css('width', p + '%').attr('aria-valuenow', p);
+    }, 100);
+    return loadingId;
+}
+
+function launchWebAdmin() {
+    // redirect to web admin interface by replace in UI server
+    var timeout = 2000,
+        id = animateProgressbar(timeout);
+    setTimeout(function() {
+        document.location.href = "http://###IP_ADDRESS###:6789";
+        //clearInterval(id);
+    }, timeout);
+}
+
+</script>
+
+</body>
+</html>
