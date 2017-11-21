@@ -12,6 +12,7 @@ APPCONFIG=$APPDIR/nzbget.conf
 APPBIN=$APPDIR/nzbget
 INSTALLER=$2
 MAINDIR=$HOME/files/maindir
+
 cd $HOME
 
 # don't use the buggy toybox tools in MM
@@ -31,9 +32,9 @@ SetupBusybox()
 
 Configure()
 {
-    # use double quotes to insert the correct MAINDIR
+    # note double quotes to trigger variable replacement vs single quotes
 	sed -e "s:^MainDir=.*:MainDir=${MAINDIR}:" -i $APPCONFIG >> $DAEMONLOG 2>&1
-	sed -e 's:^ScriptDir=.*:ScriptDir=/sdcard/data/nzbget/scripts:' -i $APPCONFIG >> $DAEMONLOG 2>&1
+	sed -e 's:^ScriptDir=.*:ScriptDir=${AppDir}/scripts:' -i $APPCONFIG >> $DAEMONLOG 2>&1
 	sed -e 's:^LockFile=.*:LockFile=${AppDir}/nzbget.lock:' -i $APPCONFIG >> $DAEMONLOG 2>&1
 }
 
@@ -41,10 +42,11 @@ Install()
 {
     echo "Installing daemon" > $DAEMONLOG
     SetupBusybox
-    echo "Path: $PATH" >> $DAEMONLOG
+
+    # some debug prints
     which sed >> $DAEMONLOG
     which tar >> $DAEMONLOG
-    tar >> $DAEMONLOG
+    tar >> $DAEMONLOG 2>&1
 
 	if test -f $APPCONFIG; then
 		CONFIG_EXISTS=yes

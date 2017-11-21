@@ -54,7 +54,7 @@ public class NZBgetService extends IntentService {
 
     @Override
     protected void onHandleIntent(Intent intent) {
-        Log.e(TAG, "NZBgetService onHandleIntent.......");
+        Log.d(TAG, "NZBgetService onHandleIntent.......");
         if (intent != null) {
             final String action = intent.getAction();
             Daemon d = Daemon.getInstance();
@@ -77,6 +77,7 @@ public class NZBgetService extends IntentService {
                     break;
                 case ACTION_START:
                     Log.i(TAG, "Starting nzbget");
+                    loadScripts(userId);
                     d.start();
                     break;
                 case ACTION_STOP:
@@ -394,11 +395,15 @@ public class NZBgetService extends IntentService {
         return result;
     }
 
+    /* Install the installer file */
     private void installFile(File installer) {
         Log.i("InstallService", "Installing...");
         installing = true;
         boolean ok = Daemon.getInstance().install(installer.getAbsolutePath(), mainDir);
-//        extractInstaller(installer);
+
+        // to use the Android installer instead of the shell script, uncomment this
+        // extractInstaller(installer);
+
         updateConfig();
         installCompleted(true, "Failed");
 
@@ -448,7 +453,7 @@ public class NZBgetService extends IntentService {
         return -1;
     }
 
-
+    /* Extract the tar.gz archive from the installer after parsing the header */
     private void extractInstaller(String installer) {
         final int BUFFER = 2048;
 
@@ -549,5 +554,25 @@ public class NZBgetService extends IntentService {
         installing = false;
         Log.i(TAG, "Installed completed: " + ok);
         // show this on GUI
+    }
+
+    /* Copy scripts from the MainDir/scripts folder into the internal scripts folder */
+    private void loadScripts(String userId) {
+        setupMainDir(userId);
+
+        File dir = new File(mainDir, "scripts");
+        File[] files = dir.listFiles();
+        for (File inFile : files) {
+            String curName = inFile.getName();
+            if (curName.endsWith(".sh")) {
+                File dst = new File(getFilesDir(), "../nzbget/scripts/" + curName);
+                try {
+                    copy(inFile, dst);
+                } catch (IOException e) {
+                    Log.e(TAG, "Failed to copy " + curName + " to internal scripts dir");
+                }
+            }
+        }
+
     }
 }
