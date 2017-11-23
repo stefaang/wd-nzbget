@@ -204,7 +204,7 @@ public class NZBgetUI extends MyCloudUIServer {
     private String getViewSource(IHTTPSession session) {
         try {
             String baseUrl = getBaseUrl(session); // get base url for further calls
-
+            baseUrl = (baseUrl == null)? "" : baseUrl;
             StringBuilder builder = new StringBuilder();
             BufferedReader reader = new BufferedReader(new InputStreamReader(mContext.getAssets().open("index.html")));
             String line = "";

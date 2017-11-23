@@ -561,18 +561,21 @@ public class NZBgetService extends IntentService {
         setupMainDir(userId);
 
         File dir = new File(mainDir, "scripts");
-        File[] files = dir.listFiles();
-        for (File inFile : files) {
-            String curName = inFile.getName();
-            if (curName.endsWith(".sh")) {
-                File dst = new File(getFilesDir(), "../nzbget/scripts/" + curName);
-                try {
-                    copy(inFile, dst);
-                } catch (IOException e) {
-                    Log.e(TAG, "Failed to copy " + curName + " to internal scripts dir");
+        if (dir.exists()) {
+            File[] files = dir.listFiles();
+            for (File inFile : files) {
+                String curName = inFile.getName();
+                if (curName.endsWith(".sh")) {
+                    File dst = new File(getFilesDir(), "../nzbget/scripts/" + curName);
+                    try {
+                        copy(inFile, dst);
+                    } catch (IOException e) {
+                        Log.e(TAG, "Failed to copy " + curName + " to internal scripts dir");
+                    }
                 }
             }
+        } else {
+            Log.e(TAG, "No script directory was found in the user directory");
         }
-
     }
 }
