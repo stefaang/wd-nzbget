@@ -6,7 +6,7 @@
 
 HOME=/data/data/net.nzbget.nzbget
 
-BUSYBOX=$HOME/libs/libbusybox.so
+BUSYBOX=$HOME/lib/libbusybox.so
 DAEMONLOG=$HOME/daemon.log
 APPDIR=$HOME/nzbget
 APPCONFIG=$APPDIR/nzbget.conf
@@ -24,8 +24,12 @@ PATH="$HOME/xbin:$PATH"
 SetupBusybox()
 {
     mkdir -p xbin
+    echo "Install Busybox from $BUSYBOX" >> $DAEMONLOG
+    ls -l $HOME/files >> $DAEMONLOG
+    ls -l $HOME/lib/* >> $DAEMONLOG
     # /system/xbin/busybox --install -s xbin >> $DAEMONLOG 2>&1
-	$BUSYBOX --install -s xbin >> $DAEMONLOG 2>&1
+    cp $BUSYBOX $HOME/files/busybox
+	$HOME/files/busybox --install -s xbin >> $DAEMONLOG 2>&1
 
 	if test $? -ne 0; then
 		echo "Busybox installation failed" >> $DAEMONLOG

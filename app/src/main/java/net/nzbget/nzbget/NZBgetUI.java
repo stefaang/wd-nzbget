@@ -83,7 +83,7 @@ public class NZBgetUI extends MyCloudUIServer {
             switch (s) {
                 case STATUS_NO_INSTALLER:
                     response = "NO_INSTALLER"; break;
-                case STATUS_NOTINSTALLED:
+                case STATUS_NOT_INSTALLED:
                     response = "NOT_INSTALLED"; break;
                 case STATUS_RUNNING:
                     response = "RUNNING"; break;

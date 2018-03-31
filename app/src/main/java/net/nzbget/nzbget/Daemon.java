@@ -8,7 +8,6 @@ import android.util.Log;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -28,7 +27,7 @@ public class Daemon
         return instance;
     }
 
-    public enum Status { STATUS_NO_INSTALLER, STATUS_NOTINSTALLED, STATUS_STOPPED, STATUS_RUNNING; };
+    public enum Status { STATUS_NO_INSTALLER, STATUS_NOT_INSTALLED, STATUS_STOPPED, STATUS_RUNNING; };
 
     public Status status(String userDir)
     {
@@ -39,7 +38,7 @@ public class Daemon
             for (File inFile : files) {
                 String curName = inFile.getName();
                 if (curName.startsWith("nzbget-") && curName.endsWith(".run")) {
-                    return Status.STATUS_NOTINSTALLED;
+                    return Status.STATUS_NOT_INSTALLED;
                 }
             }
             return Status.STATUS_NO_INSTALLER;

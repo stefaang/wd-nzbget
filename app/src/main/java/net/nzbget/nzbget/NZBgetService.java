@@ -7,7 +7,6 @@ package net.nzbget.nzbget;
 
 import android.app.DownloadManager;
 import android.app.IntentService;
-import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
@@ -16,7 +15,6 @@ import android.util.Log;
 
 import java.io.FileWriter;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -399,17 +397,44 @@ public class NZBgetService extends IntentService {
     private void installFile(File installer) {
         Log.i("InstallService", "Installing...");
         installing = true;
+
+        // check if busybox executable is present
+        checkBusyBox();
+
         boolean ok = Daemon.getInstance().install(installer.getAbsolutePath(), mainDir);
+        showInstallLog();
 
         // to use the Android installer instead of the shell script, uncomment this
-        // extractInstaller(installer);
+        //extractInstaller(installer.getAbsolutePath());
 
+        // set the MainDir (with weird pipe symbol)
         updateConfig();
         installCompleted(true, "Failed");
+    }
 
-//        InstallTask task = new InstallTask(this, downloadName);
-//        Thread thread = new Thread(task);
-//        thread.start();
+    private void checkBusyBox()
+    {
+        if (! (new File("/data/data/net.nzbget.nzbget/lib/libbusybox.so")).exists()) {
+            Log.i("InstallService", "bb not found");
+        } else {
+            Log.i("InstallService", "bb found");
+        }
+    }
+
+    private void showInstallLog()
+    {
+        try {
+            File log = new File("/data/data/net.nzbget.nzbget/daemon.log");
+            BufferedReader reader = new BufferedReader(new FileReader(log));
+            String line = "";
+            Log.i("InstallService", "Dump installer log");
+            while ((line = reader.readLine()) != null) {
+                Log.i("InstallService", line);
+            }
+            reader.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     private void updateConfig()
