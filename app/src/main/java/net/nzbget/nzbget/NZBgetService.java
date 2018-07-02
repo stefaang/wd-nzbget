@@ -106,6 +106,7 @@ public class NZBgetService extends IntentService {
     private InstallerKind installerKind;
     private String downloadName;
     private String mainDir;
+    private String scriptDir;
     private long downloadId;
     private String downloadUrl;
 
@@ -122,6 +123,12 @@ public class NZBgetService extends IntentService {
         File maindir = new File(rootDir, "nzbget");
         if (maindir.mkdirs()) {
             Log.i(TAG, "Created nzbget maindir: " + maindir.getAbsolutePath());
+            // create the public scriptdir
+            // the user can put pre/post processing scripts here
+            // they are copied to the internal files/scripts dir when the app starts
+            // and
+            File publicScriptDir = new File(maindir, "scripts");
+            publicScriptDir.mkdirs();
         } else {
             if (maindir.exists()) {
                 Log.i(TAG, "Nzbget maindir already exists: " + maindir.getAbsolutePath());
@@ -129,7 +136,15 @@ public class NZBgetService extends IntentService {
                 Log.e(TAG, "Nzbget maindir could not be created.. check storage permissions for " + maindir.getAbsolutePath());
             }
         }
-        this.mainDir = maindir.getAbsolutePath();
+        mainDir = maindir.getAbsolutePath();
+
+        File scriptdir = new File(getFilesDir(), "scripts");
+        scriptDir = scriptdir.getAbsolutePath();
+        if (scriptdir.mkdirs()) {
+            Log.i(TAG, "Created nzbget scriptdir: " + scriptDir);
+        } else {
+            Log.i(TAG, "Created nzbget scriptdir: " + scriptDir);
+        }
     }
 
     public void installDaemon(String installerType, String userId) {
@@ -447,6 +462,7 @@ public class NZBgetService extends IntentService {
             String line = "";
             while ((line = reader.readLine()) != null) {
                 line = line.replaceAll("^MainDir=.*", "MainDir=" + mainDir);
+                line = line.replaceAll("^ScriptDir=.*", "ScriptDir=" + scriptDir);
                 builder.append(line + '\n');
             }
             reader.close();
